@@ -6,7 +6,7 @@ from ecdsa import VerifyingKey, BadSignatureError
 
 
 class Client:
-    api_endpoint = 'https://api.monobank.ua/'
+    api_endpoint = 'https://api.monobank.ua'
 
     def __init__(self, token: str, custom_headers: Optional[Dict[str, str]] = None):
         headers = {
