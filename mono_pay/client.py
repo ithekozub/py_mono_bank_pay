@@ -1,8 +1,9 @@
 import base64
+import hashlib
 from typing import Optional, Dict, Any
 
+import ecdsa
 import requests
-from ecdsa import VerifyingKey, BadSignatureError
 
 
 class Client:
@@ -61,10 +62,13 @@ class Client:
                 raise ValueError(f'Unknown error response: {response.text}', response.status_code)
 
     def verify_signature(self, request_body: str, x_sign_base64: str) -> bool:
-        public_key = VerifyingKey.from_pem(base64.b64decode(self.public_key_base64))
-        signature = base64.b64decode(x_sign_base64)
+
+        pub_key_bytes = base64.b64decode(self.public_key_base64)
+        signature_bytes = base64.b64decode(x_sign_base64)
+        pub_key = ecdsa.VerifyingKey.from_pem(pub_key_bytes.decode())
 
         try:
-            return public_key.verify(signature, request_body.encode())
-        except BadSignatureError:
+            return pub_key.verify(signature_bytes, request_body, sigdecode=ecdsa.util.sigdecode_der,
+                                  hashfunc=hashlib.sha256)
+        except ecdsa.BadSignatureError:
             return False
