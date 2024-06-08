@@ -8,6 +8,8 @@ ENV/
 env.bak/
 venv.bak/
 
+
+.idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
@@ -21,3 +23,7 @@ venv.bak/
 .idea/**/gradle.xml
 .idea/**/libraries
 *.iws /out/
+
+build/
+dist/
+*.egg-info/
