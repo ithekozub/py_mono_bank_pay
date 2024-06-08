@@ -1,6 +1,8 @@
+import base64
 from typing import Optional, Dict, Any
 
 import requests
+from ecdsa import VerifyingKey, BadSignatureError
 
 
 class Client:
@@ -24,7 +26,9 @@ class Client:
             self.merchant_id = data['merchantId']
             self.merchant_name = data['merchantName']
         else:
-            raise Exception('Cannot decode JSON response from Mono')
+            raise ValueError('Cannot decode JSON response from Mono')
+
+        self.public_key_base64 = self.get_public_key()
 
     def get_merchant_id(self) -> str:
         return self.merchant_id
@@ -39,7 +43,7 @@ class Client:
         response = self.get_client().get(f'{self.api_endpoint}/api/merchant/pubkey')
         data = self.get_data_from_response(response)
         if 'key' not in data:
-            raise Exception('Invalid response from Mono API')
+            raise ValueError('Invalid response from Mono API')
         return data['key']
 
     def get_merchant(self) -> Dict[str, Any]:
@@ -52,6 +56,15 @@ class Client:
         else:
             data = response.json()
             if 'errorDescription' in data:
-                raise Exception(data['errorDescription'], response.status_code)
+                raise ValueError(data['errorDescription'], response.status_code)
             else:
-                raise Exception(f'Unknown error response: {response.text}', response.status_code)
+                raise ValueError(f'Unknown error response: {response.text}', response.status_code)
+
+    def verify_signature(self, request_body: str, x_sign_base64: str) -> bool:
+        public_key = VerifyingKey.from_pem(base64.b64decode(self.public_key_base64))
+        signature = base64.b64decode(x_sign_base64)
+
+        try:
+            return public_key.verify(signature, request_body.encode())
+        except BadSignatureError:
+            return False
