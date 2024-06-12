@@ -12,7 +12,7 @@ pip install py_mono_bank_pay
 
 ## Usage
 
-from py_mono_bank_pay import Client, Payment, Webhook
+from py_mono_bank_pay import Client, Payment
 
 ###### Initialize Client
 
@@ -34,11 +34,14 @@ invoice = payment.create(1000)
 
 print(invoice)
 
-###### Initialize Webhook
+###### Webhook signature verification
 
-webhook = Webhook(client)
+request_body = request.body
+x_sign_base64 = request.headers.get('X-Sign')
 
-is_verified = webhook.verify()
+client = Client('your_token')
+
+is_verified = client.verify_signature(request_body, x_sign_base64)
 
 print(is_verified)
 
