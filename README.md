@@ -37,6 +37,7 @@ print(invoice)
 ###### Webhook signature verification
 
 request_body = request.body
+
 x_sign_base64 = request.headers.get('X-Sign')
 
 client = Client('your_token')
